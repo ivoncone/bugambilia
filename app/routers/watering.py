@@ -1,12 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.watering import Watering
-from app.models.plant import Plant
-from app.schemas.watering import WateringCreate, WateringResponse
+from ..models import Plant, Watering
+from ..schemas import WateringCreate, WateringResponse
 
 
 router = APIRouter(
@@ -49,12 +48,14 @@ def create_watering(
 
         # Si tu modelo Plant tiene is_dead
         if hasattr(plant, "is_dead"):
-            plant.is_dead = True
+            plant.active = False
+            plant.death_cause = data.death_cause
 
     # Actualizar edad de la planta
     # Ajusta esta lógica según cómo tengas almacenada la edad
     if hasattr(plant, "age"):
-        plant.age = plant.age + 1
+        if plant.age:
+            days_passed = (date.today() - plant.date).days
 
     # Crear riego
     watering = Watering(
@@ -73,3 +74,21 @@ def create_watering(
     db.refresh(watering)
 
     return watering
+
+@router.get("/watering/today")
+def get_watering_today(db: Session = Depends(get_db)):
+    today = datetime.now().date()
+
+    start_of_day = datetime.combine(today, time.min)
+    start_of_next_day = start_of_day + timedelta(days=1)
+
+    waterings = (
+        db.query(Watering)
+        .filter(
+            Watering.schedule_watering >= start_of_day,
+            Watering.schedule_watering < start_of_next_day
+        )
+        .all()
+    )
+
+    return waterings

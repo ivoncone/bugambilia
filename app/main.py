@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from .database import engine, Base
-from .routers import plants, seasons
+from .routers import plants, seasons, watering
 from . import models
 
 
@@ -16,6 +16,8 @@ app = FastAPI(
 
 app.include_router(plants.router)
 app.include_router(seasons.router)
+app.include_router(plants.router)
+app.include_router(watering.router)
 
 @app.get("/")
 def root():

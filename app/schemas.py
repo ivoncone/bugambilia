@@ -16,6 +16,7 @@ class PlantResponse(BaseModel):
     id: int
     code: str
     name: str
+    age: int
     photo: Optional[str]
     death_cause: Optional[str]
     date: Optional[date]
