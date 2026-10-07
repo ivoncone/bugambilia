@@ -54,8 +54,9 @@ def create_watering(
     # Actualizar edad de la planta
     # Ajusta esta lógica según cómo tengas almacenada la edad
     if hasattr(plant, "age"):
-        if plant.age:
+        if plant.date:
             days_passed = (date.today() - plant.date).days
+            plant.age = days_passed
 
     # Crear riego
     watering = Watering(

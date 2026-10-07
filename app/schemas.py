@@ -7,6 +7,7 @@ class PlantCreate(BaseModel):
     code: str
     name: str
     photo: Optional[str] = None
+    date: Optional[date]
     death_cause: Optional[str] = None
     age: Optional[int] = None
     active: bool = True

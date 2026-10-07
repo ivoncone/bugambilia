@@ -33,10 +33,9 @@ def create_plant(
         name=plant.name,
         photo=plant.photo,
         death_cause=plant.death_cause,
+        date=plant.date,
         age=plant.age,
-        active=plant.active,
-        food=plant.food,
-        pruning=plant.pruning
+        active=plant.active
     )
     db.add(new_plant)
     db.commit()

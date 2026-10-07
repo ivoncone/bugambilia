@@ -23,7 +23,7 @@ class Plant(Base):
     name = Column(String(100), nullable=False)
     photo = Column(String(500))
     death_cause = Column(Text)
-    date = Column(Date, server_default=func.current_date())
+    date = Column(Date)
     active = Column(Boolean, default=True)
     age = Column(Integer)
 
