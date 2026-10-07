@@ -10,8 +10,7 @@ class PlantCreate(BaseModel):
     death_cause: Optional[str] = None
     age: Optional[int] = None
     active: bool = True
-    food: bool = False
-    pruning: bool = False
+
 
 class PlantResponse(BaseModel):
     id: int
@@ -21,9 +20,75 @@ class PlantResponse(BaseModel):
     death_cause: Optional[str]
     date: Optional[date]
     active: bool
-    age: Optional[int]
+
+    model_config = ConfigDict(from_attribute=True)
+
+class SeasonCreate(BaseModel):
+    name: str
+    begin_month: int
+    end_month: int
+    begin_day: int
+    end_day: int
+
+class SeasonResponse(BaseModel):
+    id: int
+    name: str
+    begin_month: int
+    end_month: int
+    begin_day: int
+    end_day: int
+
+    class Config:
+        from_attributes = True
+
+class WateringCreate(BaseModel):
+    plant_id: int
+    notes: Optional[str]
     food: bool
     pruning: bool
 
-    model_config = ConfigDict(from_attribute=True)
+
+class WateringResponse(BaseModel):
+    id: int
+    plant_id: int
+    watering_date: datetime
+    notes: Optional[str] = None
+    age: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+class WateringBase(BaseModel):
+    season_id: int
+    plant_id: int
+    days_to_water: Optional[int] = None
+    watering_date: Optional[datetime] = None
+    notes: Optional[str] = None
+    food: bool = False
+    pruning: bool = False
+
+    # Datos de la planta
+    is_dead: bool = False
+    death_cause: Optional[str] = None
+
+
+class WateringCreate(WateringBase):
+    pass
+
+
+class WateringResponse(BaseModel):
+    id: int
+    season_id: int
+    plant_id: int
+    days_to_water: Optional[int]
+    schedule_watering: Optional[datetime]
+    watering_date: datetime
+    notes: Optional[str]
+    food: bool
+    pruning: bool
+
+    class Config:
+        from_attributes = True
+
+        
     

@@ -26,26 +26,29 @@ class Plant(Base):
     date = Column(Date, server_default=func.current_date())
     active = Column(Boolean, default=True)
     age = Column(Integer)
-    season = relationship("WateringSeason", back_populates="plant")
-    watering = relationship("Watering", back_populates="plant", cascade="all, delete-orphan")
-    food = Column(Boolean, default=False)
-    pruning = Column(Boolean, default=False)
+
 
 class WateringSeason(Base):
     __tablename__ = "season"
 
     id = Column(Integer, primary_key=True, index=True)
-    plant_id = Column(Integer, ForeignKey("plant.id"), nullable=False)
     name = Column(String(100), nullable=False)
-    begin_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
-    plant = relationship("Plant", back_populates="season")
+    begin_month = Column(Integer, nullable=False)
+    begin_day = Column(Integer, nullable=False)
+    end_month = Column(Integer, nullable=False)
+    end_day = Column(Integer, nullable=False)
 
 class Watering(Base):
     __tablename__ = "watering"
 
     id = Column(Integer, primary_key=True, index=True)
+    season_id = Column(Integer, ForeignKey("season.id"), nullable=False)
     plant_id = Column(Integer, ForeignKey("plant.id"), nullable=False)
+    days_to_water = Column(Integer)
+    schedule_watering = Column(DateTime)
     watering_date = Column(DateTime, server_default=func.now(), nullable=False)
     notes = Column(Text)
-    plant = relationship("Plant", back_populates="watering")
+    food = Column(Boolean, default=False)
+    pruning = Column(Boolean, default=False)
+
+
