@@ -26,6 +26,7 @@ class Plant(Base):
     date = Column(Date)
     active = Column(Boolean, default=True)
     age = Column(Integer)
+    days = Column(Integer)
 
 
 class WateringSeason(Base):

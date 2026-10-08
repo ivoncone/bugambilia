@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 class PlantCreate(BaseModel):
     code: str
@@ -10,6 +10,7 @@ class PlantCreate(BaseModel):
     date: Optional[date]
     death_cause: Optional[str] = None
     age: Optional[int] = None
+    days: Optional[int] = None
     active: bool = True
 
 
@@ -18,12 +19,13 @@ class PlantResponse(BaseModel):
     code: str
     name: str
     age: int
+    days: int
     photo: Optional[str]
     death_cause: Optional[str]
     date: Optional[date]
     active: bool
 
-    model_config = ConfigDict(from_attribute=True)
+    model_config = ConfigDict(from_attributes=True)
 
 class SeasonCreate(BaseModel):
     name: str
