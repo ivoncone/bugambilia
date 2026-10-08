@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import Plant
 from ..schemas import PlantCreate, PlantResponse
-from ..errors import error_create_plant, error_get_plants, error_get_item_plant, error_plant_code_not_found
+from ..errors import error_create_plant, error_get_plants, error_get_item_plant, error_plant_code_not_found, plant_exists
 
 from datetime import datetime, timedelta, date
 
@@ -18,10 +18,7 @@ router = APIRouter(
 @router.post(
     "/", response_model=PlantResponse 
 )
-def create_plant(
-    plant: PlantCreate,
-    db: Session = Depends(get_db)
-):
+def create_plant(plant: PlantCreate, db: Session = Depends(get_db)):
     try:
         existing_plant = (
             db.query(Plant)
@@ -29,10 +26,7 @@ def create_plant(
             .first()
         )
         if existing_plant:
-            raise HTTPException(
-                status_code=400,
-                detail="El codigo de la planta ya eiste"
-            )
+            raise plant_exists()
         
         years = 0
         days = 0
@@ -51,7 +45,7 @@ def create_plant(
             photo=plant.photo,
             death_cause=plant.death_cause,
             date=plant.date,
-            age=age,
+            age=years,
             days=days,
             active=plant.active
         )
@@ -60,38 +54,28 @@ def create_plant(
         db.refresh(new_plant)
 
         return new_plant
+    except HTTPException:
+        raise
+
     except Exception as e:
         db.rollback()
         raise error_create_plant(e)
 
+#Obtener todas las plantas
 @router.get(
     "/",
     response_model=list[PlantResponse]
 )
-def get_plants(
-    db: Session = Depends(get_db)
-):
+def get_plants(db: Session = Depends(get_db)):
     try:
         plants = db.query(Plant).all()
-        result = []
-        for plant in plants:
-            years,  days = calculate_age(plant.age)
-            result.append({
-                "code": plant.code,
-                "name": plant.name,
-                "age_years": years,
-                "age_days": days,
-                "photo": plant.photo,
-                "death_cause": plant.death_cause,
-                "date": plant.date,
-                "active": plant.active
-            })
 
-        return result
+        return plants
     except Exception as e:
         db.rollback()
         raise error_get_plants(e)
 
+#Obtener una planta por codigo
 @router.get(
     "/{code}",
     response_model=PlantResponse
@@ -108,18 +92,10 @@ def get_plant(
         )
 
         if not plant:
-            raise error_plant_code_not_found
-    
-        years,  days = calculate_age(plant.age)
-        plant = ({
-                "code": plant.code,
-                "name": plant.name,
-                "age_years": years,
-                "age_days": days,
-                "active": plant.active
-            })
-
+            raise error_plant_code_not_found()
         return plant
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise error_get_item_plant

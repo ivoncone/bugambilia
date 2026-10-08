@@ -11,10 +11,10 @@ def error_get_plants(error):
         status_code=500,
         detail=f"Error al traer lista de plantas: {str(error)}"
     )
-def error_plant_code_not_found(error):
+def error_plant_code_not_found():
     return HTTPException(
         status_code=404,
-        detail=f"Planta no encontrada: {str(error)}"
+        detail=f"Planta no encontrada."
     )
 def error_season_not_found(error):
     return HTTPException(
@@ -31,6 +31,11 @@ def error_get_all_seasons(error):
         status_code=500,
         detail=f"Error al traer seasons: {str(error)}"
     )
+def plant_exists():
+    return HTTPException(
+        status_code=500,
+        detail=f"El codigo de planta ya existe:."
+    )
 def error_watering_today(error):
     return HTTPException(
         status_code=500,
@@ -45,4 +50,9 @@ def error_create_watering(error):
     return HTTPException(
         status_code=500,
         detail=f"Error al crear el riego: {str(error)}"
+    )
+def error_inactive_plant():
+    return HTTPException(
+        status_code=500,
+        detail=f"Esta planta ya no tiene un plan de riego porque esta inactiva."
     )

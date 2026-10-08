@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from ..models import Plant, Watering
 from ..schemas import WateringCreate, WateringResponse
-from ..errors import error_create_watering, error_plant_code_not_found
+from ..errors import error_create_watering, error_plant_code_not_found, error_watering_today, error_inactive_plant
 
 
 router = APIRouter(
@@ -14,12 +14,8 @@ router = APIRouter(
     tags=["Watering"]
 )
 
-
 @router.post("/", response_model=WateringResponse)
-def create_watering(
-    data: WateringCreate,
-    db: Session = Depends(get_db)
-):
+def create_watering(data: WateringCreate, db: Session = Depends(get_db)):
     try:
            # Buscar planta
         plant = db.query(Plant).filter(
@@ -28,6 +24,9 @@ def create_watering(
 
         if not plant:
             raise error_plant_code_not_found
+        #Si la planta ya ha muerte detener la función
+        if not plant.active:
+            raise error_inactive_plant()
 
         # Fecha del riego
         watering_date = data.watering_date or datetime.now()
@@ -44,20 +43,14 @@ def create_watering(
         # Si la planta murió, actualizar datos de la planta
         if data.is_dead:
             plant.death_cause = data.death_cause
-
-            # Si tu modelo Plant tiene is_dead
-            if hasattr(plant, "is_dead"):
-                plant.active = False
-                plant.death_cause = data.death_cause
+            plant.active = False
 
         # Actualizar edad de la planta
         # Ajusta esta lógica según cómo tengas almacenada la edad
         if plant.date:
-            years = 0
-        days = 0
-        if plant.date:
             today = date.today()
-            plant.years = today.year - plant.date.year
+            years = today.year - plant.date.year
+            plant.years = years
             if (today.month, today.day) < (plant.date.month, plant.date.day):
                 years -= 1
             annniversary = plant.date.replace(
@@ -82,6 +75,8 @@ def create_watering(
         db.refresh(watering)
 
         return watering
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise error_create_watering(e)
@@ -102,8 +97,12 @@ def get_watering_today(db: Session = Depends(get_db)):
             )
             .all()
         )
+        if not waterings:
+            return {
+                "message": "No hay riegos programados para hoy"
+            }
 
         return waterings
     except Exception as e:
         db.rollback()
-        raise error_watering_today
+        raise error_watering_today(e)
