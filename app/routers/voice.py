@@ -1,12 +1,15 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 import traceback
 
+from ..database import get_db
+from ..routers.plants import create_plant
 from ..errors import voice_error
 from ..schemas import (
     PlantVoiceRequest,
-    PlantVoiceResponse
+    PlantVoiceResponse,
+    PlantCreate
 )
 
 router = APIRouter(
@@ -19,7 +22,7 @@ router = APIRouter(
     "/",
     response_model=PlantVoiceResponse
 )
-def plant_from_voice(data: PlantVoiceRequest):
+def plant_from_voice(data: PlantVoiceRequest, db: Session = Depends(get_db)):
     try:
         text = data.text.strip()
 
@@ -34,7 +37,22 @@ def plant_from_voice(data: PlantVoiceRequest):
             "%Y %m %d"
         ).date()
 
-        # Por ahora solamente comprobamos que llegue
+        plant = PlantCreate(
+            code=code,
+            name=name,
+            photo=None,
+            death_cause=None,
+            date=plant_date,
+            active=True
+        )
+        new_plant = create_plant(
+            plant=plant,
+            db=db
+        )
+        db.add(new_plant) 
+        db.commit() 
+        db.refresh(new_plant) 
+
         return {
             "code": code,
             "name": name,
