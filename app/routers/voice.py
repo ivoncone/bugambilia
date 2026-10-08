@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import date, datetime
+import traceback
 
 from ..errors import voice_error
 from ..schemas import (
@@ -26,11 +27,11 @@ def plant_from_voice(data: PlantVoiceRequest):
 
         items = text.split()
         code = items[0]
-        date_text = parts[-1]
-        name = " ".join(items[1:-1])
+        date_text = " ".join(items[-3:])
+        name = " ".join(items[1:-3])
         plant_date = datetime.strptime(
             date_text,
-            "%Y-%M-%"
+            "%Y %m %d"
         ).date()
 
         # Por ahora solamente comprobamos que llegue
@@ -41,4 +42,10 @@ def plant_from_voice(data: PlantVoiceRequest):
             "active": True
         }
     except Exception as e:
-        raise voice_error(e)
+        print("========== ERROR ==========") 
+        print("Tipo:", type(e).__name__) 
+        print("Mensaje:", str(e)) 
+        traceback.print_exc() 
+        print("===========================") 
+        raise
+        #raise voice_error(e)
