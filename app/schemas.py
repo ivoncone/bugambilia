@@ -94,5 +94,12 @@ class WateringResponse(BaseModel):
     class Config:
         from_attributes = True
 
-        
+class PlantVoiceRequest(BaseModel):
+    text: str
+
+class PlantVoiceResponse(BaseModel):
+    code: str
+    name: str
+    date: date | None
+    active: bool        
     

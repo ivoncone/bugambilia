@@ -56,3 +56,8 @@ def error_inactive_plant():
         status_code=500,
         detail=f"Esta planta ya no tiene un plan de riego porque esta inactiva."
     )
+def voice_error(error):
+    return HTTPException(
+        status_code=500,
+        detail=f"Hubo problema para guardar el mensaje."
+    )
