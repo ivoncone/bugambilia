@@ -66,3 +66,18 @@ def error_update_plant_photo(error):
         status_code=500,
         detail=f"Hubo un problema al guardar la foto."
     )
+def error_plant_waterings(error):
+    return HTTPException(
+        status_code=500,
+        detail=f"No se ha podido devolver los riegos de la la planta."
+    )
+def error_update_plant(error):
+    return HTTPException(
+        status_code=500,
+        detail=f"Error al actualizar la planta."
+    )
+def error_delete_plant(error):
+    return HTTPException(
+        status_code=500,
+        detail=f"Error al eliminar planta."
+    )

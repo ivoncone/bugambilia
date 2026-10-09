@@ -13,6 +13,17 @@ class PlantCreate(BaseModel):
     days: Optional[int] = None
     active: bool = True
 
+class PlantUpdate(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    photo: Optional[str] = None
+    death_cause: Optional[str] = None
+    date: Optional[date] = None
+    next_watering_day: Optional[date] = None
+    active: Optional[bool] = None
+    age: Optional[int] = None
+    days: Optional[int] = None
+
 
 class PlantResponse(BaseModel):
     id: int
@@ -57,8 +68,10 @@ class WateringResponse(BaseModel):
     id: int
     plant_id: int
     watering_date: datetime
+    days_to_water: int
     notes: Optional[str] = None
-    age: Optional[int]
+    food: bool = False
+    pruning: bool = False
 
     class Config:
         from_attributes = True

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from ..models import Plant, Watering
 from ..schemas import WateringCreate, WateringResponse
-from ..errors import error_create_watering, error_plant_code_not_found, error_watering_today, error_inactive_plant
+from ..errors import error_create_watering, error_plant_waterings, error_plant_code_not_found, error_watering_today, error_inactive_plant
 
 
 router = APIRouter(
@@ -107,3 +107,18 @@ def get_watering_today(db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise error_watering_today(e)
+
+@router.get("/{plant_id}", response_model=list[WateringResponse])
+def get_plant_waterings(plant_id: int, db: Session = Depends(get_db)):
+    try:
+        waterings = (
+            db.query(Watering)
+            .filter(Watering.plant_id == plant_id)
+            .order_by(Watering.watering_date.desc())
+            .all()
+        )
+        if not waterings:
+            return {"message": "No hay riegos registrados para esta planta"}
+        return waterings
+    except Exception as e:
+        raise error_plant_waterings(e)

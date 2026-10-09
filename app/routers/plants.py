@@ -8,8 +8,8 @@ import cloudinary.uploader
 
 from ..database import get_db
 from ..models import Plant
-from ..schemas import PlantCreate, PlantResponse
-from ..errors import error_create_plant, error_get_plants, error_update_plant_photo, error_get_item_plant, error_plant_code_not_found, plant_exists
+from ..schemas import PlantCreate, PlantResponse, PlantUpdate
+from ..errors import error_create_plant, error_get_plants, error_delete_plant, error_update_plant, error_update_plant_photo, error_get_item_plant, error_plant_code_not_found, plant_exists
 from ..core.cloudinary_config import cloudinary
 
 
@@ -166,3 +166,40 @@ def update_plant_photo(
     
     finally:
         photo.file.close()
+
+@router.put("/{plant_id}", response_model=PlantResponse)
+def update_plant(plant_id: int, plant_data: PlantUpdate, db: Session = Depends(get_db)):
+    try:
+        plant = db.query(Plant).filter(Plant.id == plant_id).first()
+        if plant is None:
+            raise error_plant_code_not_found()
+        datos = plant_data.model_dump(exclude_unset=True)
+        for campo, valor in datos.items():
+            setattr(plant, campo, valor)
+        db.commit()
+        db.refresh(plant)
+        return plant
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise error_update_plant(e)
+
+
+@router.delete("/{plant_id}")
+def delete_plant(plant_id: int, db:Session = Dependes(get_db)):
+    try:
+        plant = db.query(Plant).filter(
+            Plant.id == plant_id
+        ).first()
+        if plant is None:
+            raise error_plant_code_not_found()
+        db.delete(plant)
+        db.commit()
+        return {
+            "message": "Planta eliminada correctamente.", 
+            "plant_id": plant_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise error_delete_plant(e)
