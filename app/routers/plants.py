@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+
+from datetime import datetime, timedelta, date
+
+import cloudinary
+import cloudinary.uploader
 
 from ..database import get_db
 from ..models import Plant
 from ..schemas import PlantCreate, PlantResponse
 from ..errors import error_create_plant, error_get_plants, error_update_plant_photo, error_get_item_plant, error_plant_code_not_found, plant_exists
-
-from datetime import datetime, timedelta, date
+from ..core.cloudinary_config import cloudinary
 
 
 
@@ -103,7 +107,7 @@ def get_plant(
 @router.put("/{plant_id}/photo")
 def update_plant_photo(
     plant_id: int,
-    photo: str,
+    photo: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
     try:
@@ -117,9 +121,30 @@ def update_plant_photo(
 
         if not plant:
             raise error_plant_code_not_found()
+        
+        print("Nombre del archivo:", photo.filename)
+        print("Content-Type:", photo.content_type)
+        
+        if photo.content_type not in (
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Solo se permiten imágenes JPG, PNG o WEBP"
+            )
 
-        # Actualizar foto
-        plant.photo = photo
+
+                # Subir la imagen a Cloudinary
+        resultado = cloudinary.uploader.upload(
+            photo.file,
+            folder="bugambilia/plantas",
+            resource_type="image"
+        )
+
+        # Guardar la URL segura en la base de datos
+        plant.photo = resultado["secure_url"]
 
         db.commit()
         db.refresh(plant)
@@ -130,11 +155,14 @@ def update_plant_photo(
             "photo": plant.photo
         }
 
+
     except HTTPException:
+        db.rollback()
         raise
 
     except Exception as e:
-
         db.rollback()
-
         raise error_update_plant_photo(e)
+    
+    finally:
+        photo.file.close()

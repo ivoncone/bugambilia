@@ -82,7 +82,7 @@ def create_watering(data: WateringCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise error_create_watering(e)
 
-@router.get("/watering/today")
+@router.get("/today")
 def get_watering_today(db: Session = Depends(get_db)):
     try:
         today = datetime.now().date()
