@@ -8,7 +8,7 @@ import cloudinary.uploader
 
 from ..database import get_db
 from ..models import Plant
-from ..schemas import PlantCreate, PlantResponse, PlantUpdate
+from ..schemas import PlantCreate, PlantResponse, PlantWateringUpdate
 from ..errors import error_create_plant, error_get_plants, error_delete_plant, error_update_plant, error_update_plant_photo, error_get_item_plant, error_plant_code_not_found, plant_exists
 from ..core.cloudinary_config import cloudinary
 
@@ -104,89 +104,37 @@ def get_plant(
         db.rollback()
         raise error_get_item_plant
 
-@router.put("/{plant_id}/photo")
-def update_plant_photo(
+
+@router.put("/{plant_id}", response_model=PlantResponse)
+def update_plant_watering(
     plant_id: int,
-    photo: UploadFile = File(...),
+    plant_data: PlantWateringUpdate,
     db: Session = Depends(get_db)
 ):
     try:
+        plant = db.query(Plant).filter(
+            Plant.id == plant_id
+        ).first()
 
-        # Buscar planta
-        plant = (
-            db.query(Plant)
-            .filter(Plant.id == plant_id)
-            .first()
-        )
-
-        if not plant:
-            raise error_plant_code_not_found()
-        
-        print("Nombre del archivo:", photo.filename)
-        print("Content-Type:", photo.content_type)
-        
-        if photo.content_type not in (
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="Solo se permiten imágenes JPG, PNG o WEBP"
-            )
-
-
-                # Subir la imagen a Cloudinary
-        resultado = cloudinary.uploader.upload(
-            photo.file,
-            folder="bugambilia/plantas",
-            resource_type="image"
-        )
-
-        # Guardar la URL segura en la base de datos
-        plant.photo = resultado["secure_url"]
-
-        db.commit()
-        db.refresh(plant)
-
-        return {
-            "message": "Foto actualizada correctamente",
-            "plant_id": plant.id,
-            "photo": plant.photo
-        }
-
-
-    except HTTPException:
-        db.rollback()
-        raise
-
-    except Exception as e:
-        db.rollback()
-        raise error_update_plant_photo(e)
-    
-    finally:
-        photo.file.close()
-
-@router.put("/{plant_id}", response_model=PlantResponse)
-def update_plant(plant_id: int, plant_data: PlantUpdate, db: Session = Depends(get_db)):
-    try:
-        plant = db.query(Plant).filter(Plant.id == plant_id).first()
         if plant is None:
             raise error_plant_code_not_found()
-        datos = plant_data.model_dump(exclude_unset=True)
-        for campo, valor in datos.items():
-            setattr(plant, campo, valor)
+
+        plant.next_watering_day = plant_data.next_watering_day
+
         db.commit()
         db.refresh(plant)
+
         return plant
+
     except HTTPException:
         raise
     except Exception as e:
+        db.rollback()
         raise error_update_plant(e)
 
 
 @router.delete("/{plant_id}")
-def delete_plant(plant_id: int, db:Session = Dependes(get_db)):
+def delete_plant(plant_id: int, db:Session = Depends(get_db)):
     try:
         plant = db.query(Plant).filter(
             Plant.id == plant_id
@@ -202,4 +150,5 @@ def delete_plant(plant_id: int, db:Session = Dependes(get_db)):
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Error{e}")
         raise error_delete_plant(e)

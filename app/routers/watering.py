@@ -117,8 +117,6 @@ def get_plant_waterings(plant_id: int, db: Session = Depends(get_db)):
             .order_by(Watering.watering_date.desc())
             .all()
         )
-        if not waterings:
-            return {"message": "No hay riegos registrados para esta planta"}
         return waterings
     except Exception as e:
         raise error_plant_waterings(e)

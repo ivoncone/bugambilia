@@ -13,16 +13,8 @@ class PlantCreate(BaseModel):
     days: Optional[int] = None
     active: bool = True
 
-class PlantUpdate(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    photo: Optional[str] = None
-    death_cause: Optional[str] = None
-    date: Optional[date] = None
-    next_watering_day: Optional[date] = None
-    active: Optional[bool] = None
-    age: Optional[int] = None
-    days: Optional[int] = None
+class PlantWateringUpdate(BaseModel):
+    next_watering_day: date | None = None
 
 
 class PlantResponse(BaseModel):
@@ -116,4 +108,4 @@ class PlantVoiceResponse(BaseModel):
     name: str
     date: date | None
     active: bool        
-    
+
