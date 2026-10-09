@@ -61,3 +61,8 @@ def voice_error(error):
         status_code=500,
         detail=f"Hubo problema para guardar el mensaje."
     )
+def error_update_plant_photo(error):
+    return HTTPException(
+        status_code=500,
+        detail=f"Hubo un problema al guardar la foto."
+    )

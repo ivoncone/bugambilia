@@ -23,6 +23,7 @@ class PlantResponse(BaseModel):
     photo: Optional[str]
     death_cause: Optional[str]
     date: Optional[date]
+    next_watering_day: Optional[date]
     active: bool
 
     model_config = ConfigDict(from_attributes=True)
@@ -65,8 +66,8 @@ class WateringResponse(BaseModel):
 class WateringBase(BaseModel):
     season_id: int
     plant_id: int
-    days_to_water: Optional[int] = None
-    watering_date: Optional[datetime] = None
+    days_to_water: int
+    watering_date: datetime
     notes: Optional[str] = None
     food: bool = False
     pruning: bool = False

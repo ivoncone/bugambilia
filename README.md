@@ -1,32 +1,16 @@
 bugambilia/
-│
-├── app/
-│   ├── main.py
-│   ├── database.py
-│   │
-│   ├── models/
-│   │   ├── planta.py
-│   │   ├── temporada.py
-│   │   └── riego.py
-│   │
-│   ├── schemas/
-│   │   ├── planta.py
-│   │   ├── temporada.py
-│   │   └── riego.py
-│   │
-│   ├── routers/
-│   │   ├── plantas.py
-│   │   ├── temporadas.py
-│   │   └── riegos.py
-│   │
-│   └── services/
-│       └── riego.py
-│
-├── uploads/
-│   └── plantas/
-│
-├── requirements.txt
-└── .env
+app
+.
+├── database.py
+├── errors.py
+├── main.py
+├── models.py
+├── routers
+│   ├── plants.py
+│   ├── seasons.py
+│   ├── voice.py
+│   └── watering.py
+└── schemas.py
 
 POST   /plantas
 GET    /plantas

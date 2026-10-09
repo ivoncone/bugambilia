@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import Plant
 from ..schemas import PlantCreate, PlantResponse
-from ..errors import error_create_plant, error_get_plants, error_get_item_plant, error_plant_code_not_found, plant_exists
+from ..errors import error_create_plant, error_get_plants, error_update_plant_photo, error_get_item_plant, error_plant_code_not_found, plant_exists
 
 from datetime import datetime, timedelta, date
 
@@ -99,3 +99,42 @@ def get_plant(
     except Exception as e:
         db.rollback()
         raise error_get_item_plant
+
+@router.put("/{plant_id}/photo")
+def update_plant_photo(
+    plant_id: int,
+    photo: str,
+    db: Session = Depends(get_db)
+):
+    try:
+
+        # Buscar planta
+        plant = (
+            db.query(Plant)
+            .filter(Plant.id == plant_id)
+            .first()
+        )
+
+        if not plant:
+            raise error_plant_code_not_found()
+
+        # Actualizar foto
+        plant.photo = photo
+
+        db.commit()
+        db.refresh(plant)
+
+        return {
+            "message": "Foto actualizada correctamente",
+            "plant_id": plant.id,
+            "photo": plant.photo
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        db.rollback()
+
+        raise error_update_plant_photo(e)

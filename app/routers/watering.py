@@ -51,6 +51,7 @@ def create_watering(data: WateringCreate, db: Session = Depends(get_db)):
             today = date.today()
             years = today.year - plant.date.year
             plant.years = years
+            plant.next_watering_day = watering_date
             if (today.month, today.day) < (plant.date.month, plant.date.day):
                 years -= 1
             annniversary = plant.date.replace(
@@ -89,20 +90,20 @@ def get_watering_today(db: Session = Depends(get_db)):
         start_of_day = datetime.combine(today, time.min)
         start_of_next_day = start_of_day + timedelta(days=1)
 
-        waterings = (
-            db.query(Watering)
+        plants = (
+            db.query(Plant)
             .filter(
-                Watering.schedule_watering >= start_of_day,
-                Watering.schedule_watering < start_of_next_day
+                Plant.next_watering_day >= start_of_day,
+                Plant.next_watering_day < start_of_next_day
             )
             .all()
         )
-        if not waterings:
+        if not plants:
             return {
                 "message": "No hay riegos programados para hoy"
             }
 
-        return waterings
+        return plants
     except Exception as e:
         db.rollback()
         raise error_watering_today(e)

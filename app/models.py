@@ -24,6 +24,7 @@ class Plant(Base):
     photo = Column(String(500))
     death_cause = Column(Text)
     date = Column(Date)
+    next_watering_day = Column(Date, nullable=True)
     active = Column(Boolean, default=True)
     age = Column(Integer)
     days = Column(Integer)
