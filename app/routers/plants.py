@@ -8,7 +8,7 @@ import cloudinary.uploader
 
 from ..database import get_db
 from ..models import Plant
-from ..schemas import PlantCreate, PlantResponse, PlantWateringUpdate
+from ..schemas import PlantCreate, PlantResponse, PlantWateringUpdate, PlantFrequencyUpdate
 from ..errors import error_create_plant, error_get_plants, error_delete_plant, error_update_plant, error_update_plant_photo, error_get_item_plant, error_plant_code_not_found, plant_exists
 from ..core.cloudinary_config import cloudinary
 
@@ -105,7 +105,7 @@ def get_plant(
         db.rollback()
         raise error_get_item_plant
 
-
+# Actualizar la fecha del proximo riego de la planta
 @router.put("/{plant_id}", response_model=PlantResponse)
 def update_plant_watering(
     plant_id: int,
@@ -121,6 +121,35 @@ def update_plant_watering(
             raise error_plant_code_not_found()
 
         plant.next_watering_day = plant_data.next_watering_day
+
+        db.commit()
+        db.refresh(plant)
+
+        return plant
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise error_update_plant(e)
+
+
+# Actualizar la frecuencia del riego
+@router.put("/frequency/{plant_id}", response_model=PlantResponse)
+def update_plant_frequencuy(
+    plant_id: int,
+    plant_data: PlantFrequencyUpdate,
+    db: Session = Depends(get_db)
+):
+    try:
+        plant = db.query(Plant).filter(
+            Plant.id == plant_id
+        ).first()
+
+        if plant is None:
+            raise error_plant_code_not_found()
+
+        plant.days_to_water = plant_data.days_to_water
 
         db.commit()
         db.refresh(plant)

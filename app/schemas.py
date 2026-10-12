@@ -17,6 +17,9 @@ class PlantCreate(BaseModel):
 class PlantWateringUpdate(BaseModel):
     next_watering_day: date | None = None
 
+class PlantFrequencyUpdate(BaseModel):
+    next_watering_day: date | None = None
+
 
 class PlantResponse(BaseModel):
     id: int
@@ -92,7 +95,6 @@ class WateringResponse(BaseModel):
     id: int
     season_id: int
     plant_id: int
-    days_to_water: Optional[int]
     schedule_watering: Optional[datetime]
     watering_date: datetime
     notes: Optional[str]
