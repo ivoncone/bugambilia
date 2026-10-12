@@ -25,9 +25,12 @@ class Plant(Base):
     death_cause = Column(Text)
     date = Column(Date)
     next_watering_day = Column(Date, nullable=True)
+    days_to_water = Column(Integer, nullable=True)
     active = Column(Boolean, default=True)
     age = Column(Integer)
     days = Column(Integer)
+    last_food = Column(Date, nullable=True)
+    last_pruning = Column(Date, nullable=True)
 
 
 class WateringSeason(Base):
@@ -46,7 +49,6 @@ class Watering(Base):
     id = Column(Integer, primary_key=True, index=True)
     season_id = Column(Integer, ForeignKey("season.id"), nullable=False)
     plant_id = Column(Integer, ForeignKey("plant.id"), nullable=False)
-    days_to_water = Column(Integer)
     schedule_watering = Column(DateTime)
     watering_date = Column(DateTime, server_default=func.now(), nullable=False)
     notes = Column(Text)

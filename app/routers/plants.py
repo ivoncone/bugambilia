@@ -49,6 +49,7 @@ def create_plant(plant: PlantCreate, db: Session = Depends(get_db)):
             photo=plant.photo,
             death_cause=plant.death_cause,
             date=plant.date,
+            days_to_water=plant.days_to_water,
             age=years,
             days=days,
             active=plant.active

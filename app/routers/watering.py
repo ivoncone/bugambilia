@@ -34,10 +34,10 @@ def create_watering(data: WateringCreate, db: Session = Depends(get_db)):
         # Calcular próximo riego
         schedule_watering = None
 
-        if data.days_to_water is not None:
+        if plant.days_to_water: 
             schedule_watering = (
                 watering_date +
-                timedelta(days=data.days_to_water)
+                timedelta(days=plant.days_to_water)
             )
 
         # Si la planta murió, actualizar datos de la planta
@@ -51,13 +51,20 @@ def create_watering(data: WateringCreate, db: Session = Depends(get_db)):
             today = date.today()
             years = today.year - plant.date.year
             plant.years = years
-            plant.next_watering_day = watering_date
+            plant.next_watering_day = schedule_watering
             if (today.month, today.day) < (plant.date.month, plant.date.day):
                 years -= 1
             annniversary = plant.date.replace(
                 year=plant.date.year + years
             )
             plant.days = (today - annniversary).days
+        
+        if watering.food:
+            plant.last_food = datetime.now()
+        
+        if watering.pruning:
+            plant.last_pruning = datetime.now()
+
 
         # Crear riego
         watering = Watering(
