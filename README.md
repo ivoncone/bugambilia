@@ -12,19 +12,21 @@ app
 │   └── watering.py
 └── schemas.py
 
-POST   /plantas
-GET    /plantas
-GET    /plantas/{codigo}
-PUT    /plantas/{codigo}
-DELETE /plantas/{codigo}
+POST   /plants
+GET    /plants
+GET    /plants/{codigo}
+PUT    /plants/{plant_id}
+PUT   /plants/{plant_id}/photo
+PUT   /plants/frequency/{plant_id}
+DELETE /plants/{plant_id}
 
-POST   /plantas/{codigo}/foto
 
-POST   /plantas/{codigo}/temporadas
-GET    /plantas/{codigo}/temporadas
+POST   /seasons
+GET    /sesons
+GET    /sesons/{season_id}
 
-POST   /plantas/{codigo}/riegos
-GET    /plantas/{codigo}/riegos
+POST   /watering
+GET    /watering
+GET    /watering/today
 
-GET    /plantas/{codigo}/proximo-riego
-GET    /riegos/hoy
+POST    /VOICE

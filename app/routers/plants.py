@@ -105,6 +105,56 @@ def get_plant(
         db.rollback()
         raise error_get_item_plant
 
+# Actualizar la foto de planta
+@router.put("/{plant_id}/photo", response_model=PlantResponse)
+def update_plant_photo(
+    plant_id: int,
+    photo: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        plant = db.query(Plant).filter(
+            Plant.id == plant_id
+        ).first()
+
+        if plant is None:
+            raise error_plant_code_not_found()
+        
+        # Validar tipo de archivo
+        tipos_permitidos = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        ]
+
+        if photo.content_type not in tipos_permitidos:
+            raise HTTPException(
+                status_code=400,
+                detail="El archivo debe ser una imagen JPG, PNG o WEBP."
+            )
+
+        # Subir imagen a Cloudinary
+        resultado = cloudinary.uploader.upload(
+            photo.file,
+            folder="bugambilia/plantas",
+            resource_type="image",
+        )
+
+        # URL segura de Cloudinary
+        plant.photo = resultado["secure_url"]
+
+
+        db.commit()
+        db.refresh(plant)
+
+        return plant
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise error_update_plant_photo(e)
+
 # Actualizar la fecha del proximo riego de la planta
 @router.put("/{plant_id}", response_model=PlantResponse)
 def update_plant_watering(
